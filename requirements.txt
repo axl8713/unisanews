@@ -1,0 +1,7 @@
+flask
+requests
+pytz
+bs4
+lxml
+dateparser
+mysqlclient
