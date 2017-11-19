@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Unisa Feed RSS</title>
+        <description>Feed RSS generato dal sito dell'Università di Salerno</description>
+        <link>http://web.unisa.it/home/news</link>
+        <webMaster>ale DOT ricchiuti AT hotmail DOT it</webMaster>
+        {%- for item in items %}
+        <item>
+            <title>{{ item.title }}</title>
+            <link>{{ item.link }}</link>
+            <description>{{ item.description|safe }}</description>
+            <pubDate>{{ item.pub_date|rfc822Date }}</pubDate>
+        </item>
+        {%- endfor %}
+    </channel>
+</rss>
