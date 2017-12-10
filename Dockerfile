@@ -9,10 +9,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY unisanews/instance ./instance
 COPY unisanews/templates ./templates
+COPY unisanews/static ./static
 
 COPY unisanews/unisanews.py .
 COPY unisanews/crawler.py .
 COPY unisanews/entities.py .
+COPY unisanews/storage.py .
 
 EXPOSE 5000
 

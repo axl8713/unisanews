@@ -1,8 +1,8 @@
-'''
+"""
 Created on Nov 15, 2015
 
 @author: aleric
-'''
+"""
 import logging
 import requests
 import pytz
@@ -21,8 +21,8 @@ class UnisaNewsCrawler(object):
 
         pages = self._spider()
         for page in pages:
-            for NewsItem in self._parse(page):
-                yield NewsItem
+            for news_item in self._parse(page):
+                yield news_item
 
     def _spider(self):
 
@@ -30,7 +30,7 @@ class UnisaNewsCrawler(object):
         older_page_index = self.LAST_PAGE
         newer_page_index = self.LAST_PAGE - self.MAX_PAGES
 
-        for page_index in range(newer_page_index, older_page_index + 1):
+        for page_index in range(older_page_index, newer_page_index, -1):
             page_url = start_url + "?page=" + str(page_index)
 
             logging.info("start crawling " + page_url)
@@ -43,8 +43,9 @@ class UnisaNewsCrawler(object):
 
         soup = BeautifulSoup(page, "lxml", parse_only=SoupStrainer("ul", class_="event-list event-left"))
         lis = soup.find_all("li")
+        lis_from_oldest = reversed(lis)
 
-        for li in lis:
+        for li in lis_from_oldest:
             yield self._scrape_news_div(li.div)
 
     def _scrape_news_div(self, div):
