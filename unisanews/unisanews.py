@@ -9,14 +9,10 @@ app.config.from_object(__name__)  # load config from this file , unisanews.py
 
 # http://flask.pocoo.org/docs/0.10/config/#instance-folders
 app.config.update(dict(
-    DATABASE_NAME='unisanews',
-    DATABASE_URL='127.0.0.1',
-    DATABASE_PORT=3306,
-    DATABASE_USER='username',
-    DATABASE_PASSWORD='password'
+    DATABASE_NAME='unisanews'
 ))
 configuration = os.getenv('UNISANEWS_CONFIGURATION', 'default')
-app.config.from_pyfile('unisanews_' + configuration + '.cfg', silent=True)
+app.config.from_pyfile('unisanews_' + configuration + '.cfg')
 
 
 @app.teardown_appcontext
