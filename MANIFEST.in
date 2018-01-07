@@ -1,2 +1,3 @@
 graft unisanews/templates
 graft unisanews/static
+include unisanews/schema.sql

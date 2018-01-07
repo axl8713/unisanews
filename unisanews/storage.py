@@ -6,7 +6,7 @@ Created on Nov 15, 2015
 import logging
 import MySQLdb
 from entities import NewsItem
-from flask import current_app
+from flask import current_app, g
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -36,9 +36,25 @@ class UnisaNewsMySqlStorage(object):
                                  ")")
     _ITEMS_TO_KEEP = 50
 
+    @staticmethod
+    def get_connection():
+        # https://stackoverflow.com/a/32017603/1291616
+        return MySQLdb.connect(
+            host=current_app.config["DATABASE_URL"],
+            port=current_app.config["DATABASE_PORT"],
+            user=current_app.config["DATABASE_USER"],
+            passwd=current_app.config["DATABASE_PASSWORD"],
+            db=current_app.config["DATABASE_NAME"],
+            charset='utf8')
+
+    def _connect(self):
+        if not hasattr(g, 'unisanews_db'):
+            g.unisanews_db = self.get_connection()
+        return g.unisanews_db
+
     def retrieve_news_items_from_storage(self):
 
-        connection = self._get_connection()
+        connection = self._connect()
         cursor = connection.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
         cursor.execute(self._query_select_items)
@@ -60,24 +76,14 @@ class UnisaNewsMySqlStorage(object):
         cursor.execute(self._query_delete_older_items, (self._ITEMS_TO_KEEP,))
         logging.debug("deleted " + str(cursor.rowcount) + " old items")
 
-    def _get_connection(self):
-        # https://stackoverflow.com/a/32017603/1291616
-        return MySQLdb.connect(
-            host=current_app.config["DATABASE_URL"],
-            port=current_app.config["DATABASE_PORT"],
-            user=current_app.config["DATABASE_USER"],
-            passwd=current_app.config["DATABASE_PASSWORD"],
-            db=current_app.config["DATABASE_NAME"],
-            charset='utf8')
-
     def update_news_items_storage(self, news_items):
 
-        connection = self._get_connection()
+        connection = self._connect()
         cursor = connection.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
         for news_item in news_items:
 
-            print (">>>>> " + news_item.title)
+            logging.info(">>>>> " + news_item.title)
 
             if self._is_item_to_be_saved(cursor, news_item):
                 logging.info("unique or newer, saving item")

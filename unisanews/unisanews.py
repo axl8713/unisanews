@@ -1,20 +1,29 @@
 import os
-from flask import Flask, render_template, send_from_directory, make_response
+from flask import Flask, render_template, send_from_directory, make_response, g
 from crawler import UnisaNewsCrawler
 from storage import UnisaNewsMySqlStorage
+import logging
 
 app = Flask(__name__, instance_relative_config=True)  # create the application instance :)
 app.config.from_object(__name__)  # load config from this file , unisanews.py
 
-# Questa e' la configurazione di default
+# http://flask.pocoo.org/docs/0.10/config/#instance-folders
 app.config.update(dict(
-    DATABASE_NAME='unisanews'
+    DATABASE_NAME='unisanews',
+    DATABASE_URL='127.0.0.1',
+    DATABASE_PORT=3306,
+    DATABASE_USER='username',
+    DATABASE_PASSWORD='password'
 ))
-
-# qui si carica la configurazione di default oppure quella che ha nel nome del file il valore della variabile d'ambiente
-# UNISANEWS_CONFIGURATION nella cartella instance (instance folder di flask)
 configuration = os.getenv('UNISANEWS_CONFIGURATION', 'default')
-app.config.from_pyfile('unisanews_' + configuration + '.cfg')
+app.config.from_pyfile('unisanews_' + configuration + '.cfg', silent=True)
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'unisanews_db'):
+        if g.unisanews_db.open:
+            g.unisanews_db.close()
 
 
 @app.template_filter('rfc822Date')
@@ -46,6 +55,15 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-# per test in locale
+def init_db():
+    with app.app_context():
+        db = UnisaNewsMySqlStorage.get_connection()
+    with app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().execute(f.read())
+    db.commit()
+
+
 if __name__ == "__main__":
+    init_db()
+    logging.debug('Initialized the database.')
     app.run(host='0.0.0.0')
