@@ -4,16 +4,20 @@ Created on Nov 15, 2015
 @author: aleric
 """
 import logging
-import requests
-import pytz
 import re
-from datetime import datetime
+import requests
 from bs4 import BeautifulSoup, SoupStrainer
-from entities import NewsItem
 import dateparser
+from pytz import timezone
+from datetime import datetime
+from entities import NewsItem
 
 
 class UnisaNewsCrawler(object):
+    UNISA_BASE_URL = "http://web.unisa.it"
+
+    PYTZ_ROME_TIMEZONE = timezone("Europe/Rome")
+
     LAST_PAGE = 3
     MAX_PAGES = 3
 
@@ -50,11 +54,9 @@ class UnisaNewsCrawler(object):
 
     def _scrape_news_div(self, div):
 
-        unisa_base_url = "http://web.unisa.it"
-
         item = NewsItem()
         item.title = unicode(div.h4.a.string)
-        item.link = unicode(unisa_base_url + div.h4.a.get("href"))
+        item.link = unicode(self.UNISA_BASE_URL + div.h4.a.get("href"))
         news_description = div.p.string
         if news_description is not None:
             item.description = unicode(news_description)
@@ -63,7 +65,7 @@ class UnisaNewsCrawler(object):
             item.description = item.title
             item.title = unicode(div.h5.small.string)
         item.pub_date = self._parse_pub_date(unicode(div.find_all("p")[1].small.string))
-        item.fetch_date = datetime.utcnow()
+        item.fetch_date = datetime.now(self.PYTZ_ROME_TIMEZONE)
 
         return item
 
@@ -71,10 +73,6 @@ class UnisaNewsCrawler(object):
         match = re.match(r'Pubblicato\s+il\s+(\d+\s+\w+\s+\d{2,4})', pub_date)
         if match:
             parsed_date = dateparser.parse(match.group(1), ["%d %B %Y"], ["it"])
-            utc_date = self._localize_date_to_rome_tz(parsed_date)
-            return utc_date
+            return parsed_date
         else:
-            return self._localize_date_to_rome_tz(datetime.now())
-
-    def _localize_date_to_rome_tz(self, parsed_date):
-        return pytz.timezone("Europe/Rome").localize(parsed_date)
+            return datetime.now(self.PYTZ_ROME_TIMEZONE)
