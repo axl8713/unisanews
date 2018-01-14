@@ -15,6 +15,7 @@ setup(
         'bs4',
         'dateparser',
         'mysqlclient',
-        'lxml'
+        'lxml',
+        'tweepy'
     ]
 )

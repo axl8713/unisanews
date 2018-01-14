@@ -1,7 +1,9 @@
+import httplib
 import os
 from flask import Flask, render_template, send_from_directory, make_response, g
 from crawler import UnisaNewsCrawler
 from storage import UnisaNewsMySqlStorage
+from tuitter import Tuitter
 import logging
 
 app = Flask(__name__, instance_relative_config=True)  # create the application instance :)
@@ -39,6 +41,7 @@ def rss_feed():
 def update_feed():
     news_items = UnisaNewsCrawler().crawl()
     saved_items = UnisaNewsMySqlStorage().update_news_items_storage(news_items)
+    Tuitter().tweet_news(saved_items)
 
     response = make_response(render_template('rss.xml', items=saved_items))
     response.headers['Content-Type'] = 'application/rss+xml'

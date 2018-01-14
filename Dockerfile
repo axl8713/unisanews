@@ -14,6 +14,7 @@ COPY unisanews/static ./static
 COPY unisanews/crawler.py .
 COPY unisanews/entities.py .
 COPY unisanews/storage.py .
+COPY unisanews/tuitter.py .
 COPY unisanews/schema.sql .
 COPY unisanews/unisanews.py .
 
