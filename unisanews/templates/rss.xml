@@ -1,14 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Unisa Feed RSS</title>
         <description>Feed RSS generato dal sito dell'Università di Salerno</description>
         <link>http://web.unisa.it/home/news</link>
-        <webMaster>ale DOT ricchiuti AT hotmail DOT it</webMaster>
+        <webMaster>ale.ricchiuti@hotmail.it (Alessandro Ricchiuti)</webMaster>
+        <atom:link href="http://unisanews-unisanews.1d35.starter-us-east-1.openshiftapps.com/unisa_feed.rss" rel="self" type="application/rss+xml" />
         {%- for item in items %}
         <item>
             <title>{{ item.title }}</title>
             <link>{{ item.link }}</link>
+            <guid>{{ item.link }}</guid>
             <description>{{ item.description|safe }}</description>
             <pubDate>{{ item.pub_date|rfc822Date }}</pubDate>
         </item>
