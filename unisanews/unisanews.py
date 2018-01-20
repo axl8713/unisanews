@@ -1,13 +1,12 @@
-import httplib
 import os
+import logging
 from flask import Flask, render_template, send_from_directory, make_response, g
 from crawler import UnisaNewsCrawler
 from storage import UnisaNewsMySqlStorage
 from tuitter import Tuitter
-import logging
 
 app = Flask(__name__, instance_relative_config=True)  # create the application instance :)
-app.config.from_object(__name__)  # load config from this file , unisanews.py
+app.config.from_object(__name__)  # load config from this file, unisanews.py
 
 # http://flask.pocoo.org/docs/0.10/config/#instance-folders
 app.config.update(dict(
