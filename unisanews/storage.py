@@ -7,6 +7,7 @@ import logging
 import MySQLdb
 from entities import NewsItem
 from flask import current_app, g
+from pytz import timezone
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -64,7 +65,7 @@ class UnisaNewsMySqlStorage(object):
             item.title = row["title"]
             item.link = row["link"]
             item.fetch_date = row["fetch_date"]
-            item.pub_date = row["pub_date"]
+            item.pub_date = timezone("Europe/Rome").localize(row["pub_date"])
             item.description = row["description"]
             yield item
 
