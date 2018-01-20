@@ -6,11 +6,12 @@ Created on Nov 15, 2015
 import logging
 import re
 import requests
-from bs4 import BeautifulSoup, SoupStrainer
 import dateparser
+from bs4 import BeautifulSoup, SoupStrainer
 from pytz import timezone
 from datetime import datetime
 from entities import NewsItem
+from xml.sax.saxutils import escape
 
 
 class UnisaNewsCrawler(object):
@@ -55,16 +56,19 @@ class UnisaNewsCrawler(object):
     def _scrape_news_div(self, div):
 
         item = NewsItem()
-        item.title = unicode(div.h4.a.string)
-        item.link = unicode(self.UNISA_BASE_URL + div.h4.a.get("href"))
+        item.title = escape(div.h4.a.string)
+        item.link = escape(self.UNISA_BASE_URL + div.h4.a.get("href"))
         news_description = div.p.string
+
         if news_description is not None:
-            item.description = unicode(news_description)
+            item.description = escape(news_description)
         else:
             # if there's no description, set it with title
             item.description = item.title
-            item.title = unicode(div.h5.small.string)
-        item.pub_date = self._parse_pub_date(unicode(div.find_all("p")[1].small.string))
+            # and set title with category
+            item.title = escape(div.h5.small.string)
+
+        item.pub_date = self._parse_pub_date(escape(div.find_all("p")[1].small.string))
         item.fetch_date = datetime.now(self.PYTZ_ROME_TIMEZONE)
 
         return item
@@ -72,7 +76,6 @@ class UnisaNewsCrawler(object):
     def _parse_pub_date(self, pub_date):
         match = re.match(r'Pubblicato\s+il\s+(\d+\s+\w+\s+\d{2,4})', pub_date)
         if match:
-            parsed_date = dateparser.parse(match.group(1), ["%d %B %Y"], ["it"])
-            return parsed_date
+            return dateparser.parse(match.group(1), ["%d %B %Y"], ["it"])
         else:
             return datetime.now(self.PYTZ_ROME_TIMEZONE)
