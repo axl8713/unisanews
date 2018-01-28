@@ -16,6 +16,7 @@ setup(
         'dateparser',
         'mysqlclient',
         'lxml',
-        'tweepy'
+        'tweepy',
+        'apscheduler'
     ]
 )

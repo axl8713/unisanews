@@ -6,3 +6,4 @@ dateparser
 mysqlclient
 lxml
 tweepy
+apscheduler

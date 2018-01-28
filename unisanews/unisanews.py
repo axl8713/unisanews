@@ -1,6 +1,8 @@
 import os
 import logging
+import httplib
 from flask import Flask, render_template, send_from_directory, make_response, g
+from apscheduler.schedulers.background import BackgroundScheduler
 from crawler import UnisaNewsCrawler
 from storage import UnisaNewsMySqlStorage
 from tuitter import Tuitter
@@ -17,7 +19,13 @@ app.config.from_pyfile('unisanews_' + configuration + '.cfg')
 
 
 @app.teardown_appcontext
-def close_db(error):
+def shutdown(error):
+    if error:
+        logging.error(error)
+        close_db()
+
+
+def close_db():
     if hasattr(g, 'unisanews_db'):
         if g.unisanews_db.open:
             g.unisanews_db.close()
@@ -36,21 +44,19 @@ def rss_feed():
     return response
 
 
-@app.route('/update_feed')
-def update_feed():
-    news_items = UnisaNewsCrawler().crawl()
-    saved_items = UnisaNewsMySqlStorage().update_news_items_storage(news_items)
-    Tuitter().tweet_news(saved_items)
-
-    response = make_response(render_template('rss.xml', items=saved_items))
-    response.headers['Content-Type'] = 'application/rss+xml'
-    return response
-
-
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+
+@app.route('/update_feed')
+def update_feed():
+    with app.app_context():
+        news_items = UnisaNewsCrawler().crawl()
+        saved_items = UnisaNewsMySqlStorage().update_news_items_storage(news_items)
+        Tuitter().tweet_news(saved_items)
+    return '', httplib.NO_CONTENT
 
 
 def init_db():
@@ -61,7 +67,17 @@ def init_db():
     db.commit()
 
 
+def init_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(update_feed, 'interval', hours=1)
+    scheduler.start()
+
+
 if __name__ == "__main__":
     init_db()
-    logging.debug('Initialized the database.')
+    logging.debug('Database initialized.')
+
+    init_scheduler()
+    logging.debug('Scheduler started.')
+
     app.run(host='0.0.0.0')
