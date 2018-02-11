@@ -4,10 +4,9 @@ Created on May 17, 2014
 @author: aleric
 """
 import logging
-import tweepy
 import time
-from datetime import datetime
-from pytz import timezone
+
+import tweepy
 from flask import current_app
 
 
@@ -22,24 +21,15 @@ class Tuitter(object):
 
         for news_item in news_items:
 
-            if self._today_news_item(news_item):
-                logging.info("tweeting")
-                tweet_text = self._compose_tweet(news_item)
+            logging.info("tweeting")
+            tweet_text = self._compose_tweet(news_item)
 
-                if tweet_sending:
-                    self._send_tweet(tweet_text)
-                    logging.info("waiting " + str(self.TWEET_DELAY) + " sec before next tweet (if any)...")
-                    time.sleep(self.TWEET_DELAY)
-                else:
-                    logging.debug("TWEET! -> " + tweet_text)
-
+            if tweet_sending:
+                self._send_tweet(tweet_text)
+                logging.info("waiting " + str(self.TWEET_DELAY) + " sec before next tweet (if any)...")
+                time.sleep(self.TWEET_DELAY)
             else:
-                logging.info("ain't tweeting, not today's news")
-
-    def _today_news_item(self, item):
-        pub_date = item.pub_date.date()
-        today = datetime.now(timezone("Europe/Rome")).date()
-        return pub_date >= today
+                logging.debug("TWEET! -> " + tweet_text)
 
     def _send_tweet(self, tweet_text):
         auth = tweepy.OAuthHandler(current_app.config["TWITTER_API_KEY"], current_app.config["TWITTER_API_SECRET"])
