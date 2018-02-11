@@ -1,13 +1,15 @@
-import os
-import logging
 import httplib
-from flask import Flask, render_template, send_from_directory, make_response, g
+import logging
+import os
+
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, render_template, send_from_directory, make_response, g
+
 from crawler import UnisaNewsCrawler
 from storage import UnisaNewsMySqlStorage
 from tuitter import Tuitter
 
-app = Flask(__name__, instance_relative_config=True)  # create the application instance :)
+app = Flask(__name__, instance_relative_config=True)
 app.config.from_object(__name__)  # load config from this file, unisanews.py
 
 # http://flask.pocoo.org/docs/0.10/config/#instance-folders
@@ -62,9 +64,15 @@ def update_feed():
 def init_db():
     with app.app_context():
         db = UnisaNewsMySqlStorage.get_connection()
-    with app.open_resource('schema.sql', mode='r') as f:
-        db.cursor().execute(f.read())
-    db.commit()
+        with app.open_resource('schema.sql', mode='r') as f:
+            db.cursor().execute(f.read())
+            db.commit()
+
+
+def init_feed():
+    with app.app_context():
+        for _ in UnisaNewsMySqlStorage().update_news_items_storage(UnisaNewsCrawler().crawl()):
+            pass
 
 
 def init_scheduler():
@@ -76,6 +84,9 @@ def init_scheduler():
 if __name__ == "__main__":
     init_db()
     logging.debug('Database initialized.')
+
+    init_feed()
+    logging.debug('Feed initialized.')
 
     init_scheduler()
     logging.debug('Scheduler started.')
