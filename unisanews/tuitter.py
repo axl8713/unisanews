@@ -47,4 +47,8 @@ class Tuitter(object):
 
     def _shrink_text(self, tweet_text):
         delta = (len(tweet_text) + self.URL_SHORT_LENGTH) - self.MAX_TWEET_LENGTH
-        return tweet_text[:-delta - 2] + u'\u2026' + " "
+
+        print (len(tweet_text))
+        print delta
+
+        return tweet_text[:-delta - 3].strip() + u'\u2026' + " "
