@@ -3,7 +3,6 @@ requests
 pytz
 bs4
 dateparser
-mysqlclient
 lxml
 tweepy
 apscheduler

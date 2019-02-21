@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='unisanews',
-    version='0.1',
+    version='0.2',
     description='Twitter and RSS feed creator from Universita\' di Salerno newspage',
     author='Alessandro Ricchiuti',
     author_email='ale DOT ricchiuti AT hotmail DOT it',
@@ -14,7 +14,6 @@ setup(
         'pytz',
         'bs4',
         'dateparser',
-        'mysqlclient',
         'lxml',
         'tweepy',
         'apscheduler'
